@@ -1,12 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
+from accounts.models import HospitalUser
 
 
-
-# One-to-One with Hospital
 from django.db import models
-from accounts.models import HospitalUser   # <-- ADD THIS IMPORT
 
+class Hospital(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    capacity = models.PositiveIntegerField(default=0)  # total bed capacity
+    available_beds = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 class ResourceStatus(models.Model):
     hospital = models.OneToOneField(
@@ -18,7 +31,7 @@ class ResourceStatus(models.Model):
     beds = models.IntegerField(default=0)
     icu_beds = models.IntegerField(default=0)
     oxygen_cylinders = models.IntegerField(default=0)
-    available_doctors = models.IntegerField(default=0)
+    available_doctors = models.IntegerField(default=0)  # match serializer
 
     def __str__(self):
         return f"Resources for {self.hospital.username}"
@@ -29,8 +42,8 @@ class ResourceStatus(models.Model):
 class EmergencyRequest(models.Model):
     patient_name = models.CharField(max_length=255)
     patient_condition = models.TextField()
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    location_lat = models.FloatField()  # match serializer
+    location_long = models.FloatField()  # match serializer
     required_specialists = models.PositiveIntegerField(default=0)
     required_icu = models.BooleanField(default=False)
     required_oxygen = models.BooleanField(default=False)
@@ -38,3 +51,35 @@ class EmergencyRequest(models.Model):
 
     def __str__(self):
         return f"Emergency: {self.patient_name}"
+
+
+class TransferLog(models.Model):
+    patient_name = models.CharField(max_length=255)  # store name if no Patient model yet
+    from_hospital = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="transfers_from"
+    )
+    to_hospital = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="transfers_to"
+    )
+    transferred_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transferred_by_user"
+    )
+
+    reason = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.patient_name} → {self.to_hospital} ({self.timestamp:%Y-%m-%d %H:%M})"
