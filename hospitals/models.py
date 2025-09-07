@@ -1,12 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-from accounts.models import HospitalUser
+from accounts.models import CustomUser
 
 
 from django.db import models
 
 class Hospital(models.Model):
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='hospital_profile',
+        limit_choices_to={'role': 'hospital_admin'},
+        null=True, blank=True
+    )
     name = models.CharField(max_length=255, unique=True)
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -23,9 +30,9 @@ class Hospital(models.Model):
 
 class ResourceStatus(models.Model):
     hospital = models.OneToOneField(
-        HospitalUser,
+        CustomUser,
         on_delete=models.CASCADE,
-        limit_choices_to={'role': 'hospital_admin'},  # ensures only hospital admins can have resources
+        limit_choices_to={'role': 'hospital_admin'},
         related_name="resource_status"
     )
     beds = models.IntegerField(default=0)
@@ -42,15 +49,26 @@ class ResourceStatus(models.Model):
 class EmergencyRequest(models.Model):
     patient_name = models.CharField(max_length=255)
     patient_condition = models.TextField()
-    location_lat = models.FloatField()  # match serializer
-    location_long = models.FloatField()  # match serializer
+    location_lat = models.FloatField()  
+    location_long = models.FloatField() 
     required_specialists = models.PositiveIntegerField(default=0)
     required_icu = models.BooleanField(default=False)
     required_oxygen = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("rejected", "Rejected"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+
+    def __str__(self):
+        return f"{self.patient} → {self.hospital} ({self.status})"
+
     def __str__(self):
         return f"Emergency: {self.patient_name}"
+
 
 
 class TransferLog(models.Model):

@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.routers import DefaultRouter
+from . import views
 from .views import (
     HospitalRegisterView,
     ResourceStatusUpdateView,
@@ -24,4 +25,5 @@ urlpatterns = [
     path("emergency/request/", EmergencyRequestCreateView.as_view(), name="emergency_request"),
     path("hospital/finder/", hospital_finder, name="hospital_finder"),
     path('', include(router.urls)),
+     path("", views.home, name="home"),
 ]

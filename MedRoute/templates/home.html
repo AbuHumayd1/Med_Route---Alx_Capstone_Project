@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MedRoute Demo</title>
+</head>
+<body>
+  <h1>🚑 Welcome to MedRoute</h1>
+  <p>Click the buttons below to test the backend features.</p>
+
+  <!-- Example buttons for your core features -->
+  <button onclick="alert('Feature 1: Hospital search works!')">Search Hospitals</button>
+  <button onclick="alert('Feature 2: Emergency Matching works!')">Match Patients</button>
+  <button onclick="alert('Feature 3: Capacity Tracking works!')">Check Capacity</button>
+
+<button onclick="searchHospitals()">Search Hospitals</button>
+
+<script>
+function searchHospitals() {
+    fetch('/api/hospitals/') 
+    .then(response => response.json())
+    .then(data => alert(JSON.stringify(data)))
+    .catch(error => console.error(error));
+}
+</script>
+</body>
+</html>
