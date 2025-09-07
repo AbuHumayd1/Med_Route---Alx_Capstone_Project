@@ -25,7 +25,7 @@ class ResourceStatusSerializer(serializers.ModelSerializer):
 class EmergencyRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmergencyRequest
-        fields = ['id', 'patient_name', 'patient_condition', 'location_lat', 'location_long', 'status', 'assigned_hospital']
+        fields = ['id', 'patient_name', 'patient_condition', 'location_lat', 'location_long', 'status', 'required_specialists', 'required_icu']
 
 
 class TransferLogSerializer(serializers.ModelSerializer):
